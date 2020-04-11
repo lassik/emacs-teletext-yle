@@ -38,7 +38,7 @@ Please use it only for casual browsing.  If you want to do
 experiments that might exceed the rate limit of the API, get
 your own free key at <https://developer.yle.fi/>.")
 
-(defun teletext-yle--url (page)
+(defun teletext-yle--page-url (page)
   "Internal helper to get the API URL for an YLE teletext PAGE."
   (concat "https://external.api.yle.fi"
           "/v1/teletext/pages/" (number-to-string page) ".json"
@@ -94,7 +94,7 @@ your own free key at <https://developer.yle.fi/>.")
 
 (defun teletext-yle--download-page-json (page)
   "Internal helper to get the JSON for an YLE teletext PAGE."
-  (let ((url (teletext-yle--url page)))
+  (let ((url (teletext-yle--page-url page)))
     (with-temp-buffer
       (condition-case _
           (let ((url-show-status nil))
