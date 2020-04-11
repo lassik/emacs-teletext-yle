@@ -115,8 +115,10 @@ PAGE from the YLE API."
                              (string-to-number
                               (assoc* 'number this-subpage))))
             (cons 'subpages (max 1 (length subpages)))
-            (cons 'prev-page page)
-            (cons 'next-page page)
+            (cons 'prev-page (let ((pg (assoc* 'prevpg page-json)))
+                               (and pg (string-to-number pg))))
+            (cons 'next-page (let ((pg (assoc* 'nextpg page-json)))
+                               (and pg (string-to-number pg))))
             (cons 'network-heading "YLE TEKSTI-TV")
             (cons 'network-page-text "Sivu:")
             (cons 'network-time-format "{dd}.{mm}. {HH}:{MM}")))))
