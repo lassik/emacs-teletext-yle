@@ -70,9 +70,8 @@ PAGE from the YLE API."
             (parse-hex (s)
                        (and s (string-match "^[0-9A-F][0-9A-F]h$" s)
                             (cl-parse-integer (substring s 0 2) :radix 16))))
-    (let* ((subpages (vector-to-list
-                      (assoc* 'subpage
-                              (assoc* 'page (assoc* 'teletext parsed-json)))))
+    (let* ((page-json (assoc* 'page (assoc* 'teletext parsed-json)))
+           (subpages (vector-to-list (assoc* 'subpage page-json)))
            (this-subpage
             (or (cl-some (lambda (this-subpage)
                            (let* ((snumber (assoc* 'number this-subpage))
