@@ -45,6 +45,53 @@ your own free key at <https://developer.yle.fi/>.")
           "?app_id="  (nth 0 teletext-yle--auth)
           "&app_key=" (nth 1 teletext-yle--auth)))
 
+(defconst teletext-yle--colors
+  '("Black" "Red" "Green" "Yellow" "Blue" "Magenta" "Cyan" "White")
+  "Internal list of colors from the YLE teletext API.")
+
+(defconst teletext-yle--graphics-colors
+  (mapcar (lambda (color) (concat "G" color)) teletext-yle--colors)
+  "Internal list of colors from the YLE teletext API.")
+
+(defconst teletext-yle--keyword-re
+  (concat (regexp-quote "{")
+          (regexp-opt (append
+                       teletext-yle--colors
+                       teletext-yle--graphics-colors
+                       '("BB" "NB")
+                       '("Flash" "Steady" "Conceal" "Hold" "Release")
+                       '("ESC" "NH" "DH" "CG" "SG" "EB" "SB" "DW" "DS"))
+                      t)
+          (regexp-quote "}"))
+  "Internal regular expression to match one YLE teletext keyword.")
+
+(defun teletext-yle--decode-line ()
+  "Internal helper to display one line of text on an YLE teletext page."
+  (let ((bg "black") (fg "white") (graphics-p nil) (case-fold-search nil))
+    (while (not (eolp))
+      (let ((keyword nil) (start (point)))
+        (cond ((re-search-forward teletext-yle--keyword-re (point-at-eol) t)
+               (setq keyword (match-string 1))
+               (replace-match " ")
+               (goto-char (match-beginning 0)))
+              (t
+               (goto-char (point-at-eol))))
+        (let ((end (point)))
+          (cond (graphics-p
+                 (delete-region start end)
+                 (teletext-insert-spaces bg (- end start)))
+                (t
+                 (teletext-put-color bg fg start end))))
+        (cond ((equal keyword "BB")
+               (setq bg "black"))
+              ((equal keyword "NB")
+               (setq bg fg))
+              ((member keyword teletext-yle--colors)
+               (setq graphics-p nil fg (downcase keyword)))
+              ((member keyword teletext-yle--graphics-colors)
+               (setq graphics-p t fg (downcase (substring keyword 1)))))))
+    (teletext-insert-spaces bg (- 40 (- (point) (point-at-bol))))))
+
 (defun teletext-yle--download-page-json (page)
   "Internal helper to get the JSON for an YLE teletext PAGE."
   (let ((url (teletext-yle--url page)))
@@ -67,13 +114,7 @@ SUBPAGE is the subpage (1..n) of that page.  PARSED-JSON is an
 Emacs Lisp representation of the JSON response corresponding to
 PAGE from the YLE API."
   (cl-flet ((vector-to-list (x) (cl-map 'list #'identity x))
-            (assoc* (key x) (cdr (assoc key x)))
-            (graphics-p (color)
-                        (member color '("gblue" "gcyan" "ggreen" "gmagenta"
-                                        "gred" "gwhite" "gyellow")))
-            (parse-hex (s)
-                       (and s (string-match "^[0-9A-F][0-9A-F]h$" s)
-                            (cl-parse-integer (substring s 0 2) :radix 16))))
+            (assoc* (key x) (cdr (assoc key x))))
     (let* ((page-json (assoc* 'page (assoc* 'teletext parsed-json)))
            (subpages (vector-to-list (assoc* 'subpage page-json)))
            (this-subpage
@@ -86,34 +127,18 @@ PAGE from the YLE API."
                          subpages)
                 (first subpages))))
       (mapc (lambda (line)
-              (let ((runs (assoc* 'run line)))
-                (setq runs (if (vectorp runs) runs (vector runs)))
-                (dolist (run (vector-to-list runs))
-                  (let ((bg (assoc* 'bg run))
-                        (fg (assoc* 'fg run))
-                        (text (assoc* 'Text run))
-                        (charcode (parse-hex (assoc* 'charcode run)))
-                        (length (string-to-number (assoc* 'length run))))
-                    (setq text (cond ((graphics-p fg)
-                                      (make-string length ? ))
-                                     (text text)
-                                     (t (make-string
-                                         length (or charcode ? )))))
-                    (when (graphics-p bg) (setq bg (substring bg 1)))
-                    (when (graphics-p fg) (setq fg (substring fg 1)))
-                    (let ((start (point)))
-                      (insert text)
-                      (let ((overlay (make-overlay start (point)))
-                            (face (teletext-get-face bg fg)))
-                        (overlay-put overlay 'face face))))))
+              (let ((text (assoc* 'Text line)))
+                (when text
+                  (let ((start (point)))
+                    (insert text)
+                    (goto-char start))))
+              (teletext-yle--decode-line)
               (insert "\n"))
             (vector-to-list
-             (assoc* 'line
-                     (cl-some (lambda (x)
-                                (and (equal "structured" (assoc* 'type x))
-                                     x))
-                              (vector-to-list
-                               (assoc* 'content this-subpage))))))
+             (assoc* 'line (cl-some (lambda (x)
+                                      (and (equal "all" (assoc* 'type x)) x))
+                                    (vector-to-list
+                                     (assoc* 'content this-subpage))))))
       (list (cons 'page page)
             (cons 'subpage (if (null this-subpage) 1
                              (string-to-number
