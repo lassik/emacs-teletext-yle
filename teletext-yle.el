@@ -38,6 +38,9 @@ Please use it only for casual browsing.  If you want to do
 experiments that might exceed the rate limit of the API, get
 your own free key at <https://developer.yle.fi/>.")
 
+(defvar teletext-yle--cache (make-hash-table)
+  "Cache for recently retrieved YLE teletext pages.")
+
 (defun teletext-yle--page-url (page)
   "Internal helper to get the API URL for an YLE teletext PAGE."
   (concat "https://external.api.yle.fi"
@@ -107,6 +110,20 @@ your own free key at <https://developer.yle.fi/>.")
          (message "Error decoding teletext page")
          nil)))))
 
+(defun teletext-yle--get-page-json (page force)
+  "Internal helper to get the JSON for an YLE teletext PAGE."
+  (let ((cached (unless force (gethash page teletext-yle--cache))))
+    (when cached
+      (let* ((timestamp (nth 0 cached))
+             (age (truncate (time-to-seconds (time-since timestamp)))))
+        (when (> age 60)
+          (remhash page teletext-yle--cache)
+          (setq cached nil))))
+    (or (and cached (nth 1 cached))
+        (let ((json (teletext-yle--download-page-json page)))
+          (puthash page (list (current-time) json) teletext-yle--cache)
+          json))))
+
 (defun teletext-yle--insert-from-json (parsed-json page subpage)
   "Internal helper to insert the contents of an YLE teletext PAGE.
 
@@ -152,13 +169,14 @@ PAGE from the YLE API."
             (cons 'network-page-text "Sivu:")
             (cons 'network-time-format "{dd}.{mm}. {HH}:{MM}")))))
 
-(defun teletext-yle--page (network page subpage)
+(defun teletext-yle--page (network page subpage force)
   "Internal helper to insert the contents of YLE PAGE/SUBPAGE.
 
 NETWORK must be \"YLE\"."
   (cl-assert (equal network "YLE"))
   (teletext-yle--insert-from-json
-   (teletext-yle--download-page-json page) page subpage))
+   (teletext-yle--get-page-json page force)
+   page subpage))
 
 (defun teletext-yle--networks ()
   "Internal helper to get the YLE teletext network list."
