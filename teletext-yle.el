@@ -111,7 +111,12 @@ your own free key at <https://developer.yle.fi/>.")
          nil)))))
 
 (defun teletext-yle--get-page-json (page force)
-  "Internal helper to get the JSON for an YLE teletext PAGE."
+  "Internal helper to get the JSON for an YLE teletext PAGE.
+
+Previously visited pages are cached in `teletext-yle--cache`.
+This function retrieves the page from cache unless the cache is
+stale or FORCE is non-nil.  A newly downloaded page is put in
+cache."
   (let ((cached (unless force (gethash page teletext-yle--cache))))
     (when cached
       (let* ((timestamp (nth 0 cached))
