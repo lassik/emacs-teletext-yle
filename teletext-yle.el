@@ -147,7 +147,7 @@ PAGE from the YLE API."
                              (and (equal number subpage)
                                   this-subpage)))
                          subpages)
-                (first subpages))))
+                (car subpages))))
       (mapc (lambda (line)
               (let ((text (assoc* 'Text line)))
                 (when text
