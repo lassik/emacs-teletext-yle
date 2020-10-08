@@ -12,11 +12,11 @@
 ;;; Commentary:
 ;;
 ;; Provides a teletext broadcast from YLE, the Finnish national
-;; television network.  The service is free of charge and a TV tuner
-;; is not needed for browsing: an ordinary internet connection is
-;; enough.  You don't need a personal YLE account to use this.
+;; television network.  A TV tuner is not needed for browsing: an
+;; ordinary internet connection is enough.  The service is free of
+;; charge and you don't need to have your own YLE account.
 ;;
-;; The broadcast is retrieved from YLE's official public API.  This
+;; The broadcast is retrieved from YLE's official HTTP API.  This
 ;; Emacs package is not made by YLE and is not endorsed by them or
 ;; affiliated with them in any way.
 ;;
@@ -33,10 +33,11 @@
   (list "7ae4681c" "effd5dd0d540d1eaade99c1ab466be0a")
   "API key used to download teletext pages from YLE.
 
-The default key is shared with everyone as an act of goodwill.
-Please use it only for casual browsing.  If you want to do
-experiments that might exceed the rate limit of the API, get
-your own free key at <https://developer.yle.fi/>.")
+The default key is shared with all Emacs users as an act of
+goodwill.  Please use it only for casual browsing.  The API has a
+rate limit.  Exceeding the limit will block all requests for about
+an hour.  If you want to do experiments that might exceed it,
+please get your own free key at <https://developer.yle.fi/>.")
 
 (defvar teletext-yle--cache (make-hash-table)
   "Cache for recently retrieved YLE teletext pages.")
