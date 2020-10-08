@@ -188,10 +188,11 @@ NETWORK must be \"YLE\"."
   "Internal helper to get the YLE teletext network list."
   '("YLE"))
 
-(teletext-provide
- 'teletext-yle
- :networks #'teletext-yle--networks
- :page #'teletext-yle--page)
+(eval-when-compile
+  (teletext-provide
+   'teletext-yle
+   :networks #'teletext-yle--networks
+   :page #'teletext-yle--page))
 
 (provide 'teletext-yle)
 
