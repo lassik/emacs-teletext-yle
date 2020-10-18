@@ -190,7 +190,7 @@ NETWORK must be \"YLE\"."
 
 ;;;###autoload
 (defun teletext-yle-provide ()
-  "Register the YLE teletext provider.
+  "Add YLE to the teletext network list.
 
 Call this in your Emacs initialization file."
   (teletext-provide
