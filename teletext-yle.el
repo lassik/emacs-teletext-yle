@@ -188,14 +188,15 @@ NETWORK must be \"YLE\"."
   "Internal helper to get the YLE teletext network list."
   '("YLE"))
 
-(defun teletext-yle--provide ()
-  "Internal helper to register the YLE teletext provider."
+;;;###autoload
+(defun teletext-yle-provide ()
+  "Register the YLE teletext provider.
+
+Call this in your Emacs initialization file."
   (teletext-provide
    'teletext-yle
    :networks #'teletext-yle--networks
    :page #'teletext-yle--page))
-
-(eval-after-load 'teletext #'teletext-yle--provide)
 
 (provide 'teletext-yle)
 
