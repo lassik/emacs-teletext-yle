@@ -199,6 +199,9 @@ Call this in your Emacs initialization file."
    :networks #'teletext-yle--networks
    :page #'teletext-yle--page))
 
+;;;###autoload
+(teletext-yle-provide)
+
 (provide 'teletext-yle)
 
 ;;; teletext-yle.el ends here
