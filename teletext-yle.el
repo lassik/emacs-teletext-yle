@@ -1,28 +1,28 @@
 ;;; teletext-yle.el --- Teletext provider for Finnish national network YLE -*- lexical-binding: t -*-
-;;
+
 ;; SPDX-License-Identifier: ISC
 ;; Author: Lassi Kortela <lassi@lassi.io>
 ;; URL: https://github.com/lassik/emacs-teletext-yle
 ;; Package-Requires: ((emacs "24.3") (teletext "0.1"))
 ;; Version: 0.1.0
 ;; Keywords: comm help hypermedia
-;;
+
 ;; This file is not part of GNU Emacs.
-;;
+
 ;;; Commentary:
-;;
+
 ;; Provides a teletext broadcast from YLE, the Finnish national
 ;; television network.  A TV tuner is not needed for browsing: an
 ;; ordinary internet connection is enough.  The service is free of
 ;; charge and you don't need to have your own YLE account.
-;;
+
 ;; The broadcast is retrieved from YLE's official HTTP API.  This
 ;; Emacs package is not made by YLE and is not endorsed by them or
 ;; affiliated with them in any way.
-;;
+
 ;; Note: The vast majority of YLE teletext pages are in Finnish with a
 ;; small selection in Swedish and only news headlines in English.
-;;
+
 ;;; Code:
 
 (require 'json)
